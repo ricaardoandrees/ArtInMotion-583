@@ -4707,11 +4707,16 @@
     ]
   },
   "packageFolders": {
+<<<<<<< Updated upstream
     "C:\\Users\\danie\\.nuget\\packages\\": {}
+=======
+    "C:\\Users\\Rentek\\.nuget\\packages\\": {}
+>>>>>>> Stashed changes
   },
   "project": {
     "version": "1.0.0",
     "restore": {
+<<<<<<< Updated upstream
       "projectUniqueName": "C:\\Users\\danie\\OneDrive\\Documentos\\Proyecto IS\\ArtInMotion\\back-end\\back-end.csproj",
       "projectName": "back-end",
       "projectPath": "C:\\Users\\danie\\OneDrive\\Documentos\\Proyecto IS\\ArtInMotion\\back-end\\back-end.csproj",
@@ -4720,6 +4725,16 @@
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\danie\\AppData\\Roaming\\NuGet\\NuGet.Config"
+=======
+      "projectUniqueName": "C:\\Users\\Rentek\\OneDrive\\Escritorio\\ArtInMotion-583\\back-end\\back-end.csproj",
+      "projectName": "back-end",
+      "projectPath": "C:\\Users\\Rentek\\OneDrive\\Escritorio\\ArtInMotion-583\\back-end\\back-end.csproj",
+      "packagesPath": "C:\\Users\\Rentek\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Rentek\\OneDrive\\Escritorio\\ArtInMotion-583\\back-end\\obj\\",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "C:\\Users\\Rentek\\AppData\\Roaming\\NuGet\\NuGet.Config"
+>>>>>>> Stashed changes
       ],
       "originalTargetFrameworks": [
         "net9.0"
@@ -4743,7 +4758,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
       "net9.0": {
@@ -4789,8 +4804,20 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.202/PortableRuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "El paquete \"SixLabors.ImageSharp\" 3.1.8 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-rxmq-m78w-7wmc",
+      "libraryId": "SixLabors.ImageSharp",
+      "targetGraphs": [
+        "net9.0"
+      ]
+    }
+  ]
 }
