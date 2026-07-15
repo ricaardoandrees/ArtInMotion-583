@@ -1,0 +1,18 @@
+# Carpetas de compilación .NET — nunca deben subirse a Git
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+*.user
+*.suo
+
+# JetBrains Rider / IntelliJ (.idea)
+.idea/
+
+# Otros archivos generados
+*.cache
+*.dll
+*.pdb
+*.exe

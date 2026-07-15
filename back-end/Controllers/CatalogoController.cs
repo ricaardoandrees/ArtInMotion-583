@@ -31,11 +31,8 @@ public class CatalogoController : ControllerBase
         if (archivo == null || archivo.Length == 0)
             return BadRequest("No se seleccionó ningún archivo.");
 
-<<<<<<< Updated upstream
+
         var extensionesPermitidas = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
-=======
-        var extensionesPermitidas = new[] { ".jpg", ".jpeg"};
->>>>>>> Stashed changes
         var extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
         if (!extensionesPermitidas.Contains(extension))
             return BadRequest("Solo se permiten archivos de imagen.");
