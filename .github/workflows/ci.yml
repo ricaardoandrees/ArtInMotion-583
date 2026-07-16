@@ -1,0 +1,59 @@
+name: Pipeline de Integración Continua - SQA Art in Motion
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+# Necesarios para que el pipeline pueda publicar el reporte de resultados
+# como check y comentario en la interfaz de los PRs/commits.
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  pruebas-unitarias-backend:
+    name: Pruebas Unitarias - Backend (.NET / xUnit)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar código fuente
+        uses: actions/checkout@v4
+
+      - name: Configurar .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restaurar dependencias
+        run: dotnet restore proyecto.sln
+
+      - name: Compilar solución
+        run: dotnet build proyecto.sln --no-restore --configuration Release
+
+      - name: Ejecutar pruebas unitarias (xUnit)
+        run: >
+          dotnet test proyecto.sln
+          --no-build
+          --configuration Release
+          --logger "trx;LogFileName=test-results.trx"
+          --results-directory ./TestResults
+
+      # Publica el resultado como check visible en el PR/commit,
+      # incluso si algún test falla (evidencia del ejercicio de IC pedido por el profesor).
+      - name: Publicar reporte de pruebas
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Resultados de Pruebas xUnit
+          path: TestResults/*.trx
+          reporter: dotnet-trx
+
+      - name: Subir resultados como artefacto descargable
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-pruebas-unitarias
+          path: TestResults/*.trx
