@@ -22,9 +22,8 @@ public class DibujoController : ControllerBase
 
         try
         {
-            string safeName = Regex.Replace(req.Nombre, @"[^a-zA-Z0-9_-]", "");
-            var base64Data = Regex.Match(req.ImagenBase64, @"data:image/(?<type>.+?),(?<data>.+)").Groups["data"].Value;
-            byte[] bytes = Convert.FromBase64String(base64Data);
+            string safeName = DibujoLogica.LimpiarNombre(req.Nombre);
+            byte[] bytes = DibujoLogica.DecodificarBase64(req.ImagenBase64);
 
             string fileName = $"{safeName}_{DateTime.Now.Ticks}.png";
             string carpetaDibujos = @"../back-end/Datos/Dibujo";
@@ -36,7 +35,7 @@ public class DibujoController : ControllerBase
 
             string rutaWeb = $"/Dibujo/{fileName}";
 
-         string uuid = extraerUUIDDeNombre(safeName); 
+         string uuid = DibujoLogica.ExtraerUUIDDeNombre(safeName); 
         var dibujoNuevo = new DibujoRequest
         {
             NombreCreacion = req.Nombre,
@@ -72,13 +71,6 @@ public class DibujoController : ControllerBase
             return BadRequest(new { mensaje = "Error al guardar el dibujo", error = ex.Message });
         }
     }
-private string extraerUUIDDeNombre(string nombre)
-{
-    var partes = nombre.Split('_');
-    if (partes.Length > 1)
-        return partes.Last();
-    return "desconocido";
-}
 }
 public class GuardarSimpleRequest
 {
