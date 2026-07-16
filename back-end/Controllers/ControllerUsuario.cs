@@ -1,40 +1,23 @@
 using Microsoft.AspNetCore.Mvc;
-using System.IO;
 using System.Text.Json;
 using Usuarioo.Models;
+using Usuarioo.Repositories;
 
 [ApiController]
 [Route("api/usuarios")]
 public class UsuariosController : ControllerBase
 {
-    private readonly string rutaUsuarios = @"..\back-end\Datos\usuarios.json";
+    private readonly IUsuarioRepository _usuarioRepository;
+
+    public UsuariosController(IUsuarioRepository usuarioRepository)
+    {
+        _usuarioRepository = usuarioRepository;
+    }
 
     [HttpPost("guardar")]
     public IActionResult GuardarUsuario([FromBody] Usuario usuario)
     {
-        List<Usuario> usuarios = new List<Usuario>();
-
-        // Verifica si el archivo existe y lo lee
-        if (System.IO.File.Exists(rutaUsuarios))
-        {
-            var lineas = System.IO.File.ReadAllLines(rutaUsuarios);
-            foreach (var linea in lineas)
-            {
-                if (!string.IsNullOrWhiteSpace(linea))
-                {
-                    try
-                    {
-                        var u = JsonSerializer.Deserialize<Usuario>(linea);
-                        if (u != null)
-                            usuarios.Add(u);
-                    }
-                    catch
-                    {
-                        // Ignora líneas mal formateadas
-                    }
-                }
-            }
-        }
+        List<Usuario> usuarios = _usuarioRepository.ObtenerTodos();
 
         // Busca si ya existe un usuario con el mismo email (ignorando mayúsculas/minúsculas)
         bool existe = usuarios.Any(u =>
@@ -47,9 +30,7 @@ public class UsuariosController : ControllerBase
         }
 
         // Si no existe, guarda el usuario
-        usuario.Uuid = Guid.NewGuid().ToString();
-        var usuarioJson = JsonSerializer.Serialize(usuario);
-        System.IO.File.AppendAllText(rutaUsuarios, usuarioJson + Environment.NewLine);
+        _usuarioRepository.Agregar(usuario);
 
         return Ok(new { mensaje = "userSuccesfullyRegistered" });
     }
@@ -63,44 +44,22 @@ public class UsuariosController : ControllerBase
         {
             return BadRequest(new { mensaje = "Faltan datos de login" });
         }
-    
+
         string email = emailElement.GetString() ?? "";
         string contrasena = contrasenaElement.GetString() ?? "";
-    
-        List<Usuario> usuarios = new List<Usuario>();
-    
-        // Leer el archivo de usuarios
-        if (System.IO.File.Exists(rutaUsuarios))
-        {
-            var lineas = System.IO.File.ReadAllLines(rutaUsuarios);
-            foreach (var linea in lineas)
-            {
-                if (!string.IsNullOrWhiteSpace(linea))
-                {
-                    try
-                    {
-                        var u = JsonSerializer.Deserialize<Usuario>(linea);
-                        if (u != null)
-                            usuarios.Add(u);
-                    }
-                    catch
-                    {
-                        // Ignora líneas mal formateadas
-                    }
-                }
-            }
-        }
-    
+
+        List<Usuario> usuarios = _usuarioRepository.ObtenerTodos();
+
         // Buscar usuario por email (ignorando mayúsculas/minúsculas)
         var usuario = usuarios.FirstOrDefault(u =>
             u.Email.Trim().ToLower() == email.Trim().ToLower()
         );
-    
+
         if (usuario == null)
         {
             return BadRequest(new { mensaje = "userNotFound" });
         }
-    
+
         // Comparar contraseñas
         if (usuario.Contrasena == contrasena)
         {
@@ -112,7 +71,7 @@ public class UsuariosController : ControllerBase
         }
     }
 
-    
+
     [HttpPost("search")]
     public IActionResult SearchUser([FromBody] JsonElement login)
     {
@@ -122,45 +81,23 @@ public class UsuariosController : ControllerBase
         {
             return BadRequest(new { mensaje = "Faltan datos de login" });
         }
-    
+
         string email = emailElement.GetString() ?? "";
         string contrasena = contrasenaElement.GetString() ?? "";
-    
-        List<Usuario> usuarios = new List<Usuario>();
-    
-        // Leer el archivo de usuarios
-        if (System.IO.File.Exists(rutaUsuarios))
-        {
-            var lineas = System.IO.File.ReadAllLines(rutaUsuarios);
-            foreach (var linea in lineas)
-            {
-                if (!string.IsNullOrWhiteSpace(linea))
-                {
-                    try
-                    {
-                        var u = JsonSerializer.Deserialize<Usuario>(linea);
-                        if (u != null)
-                            usuarios.Add(u);
-                    }
-                    catch
-                    {
-                        // Ignora líneas mal formateadas
-                    }
-                }
-            }
-        }
-    
+
+        List<Usuario> usuarios = _usuarioRepository.ObtenerTodos();
+
         // Buscar usuario por email (ignorando mayúsculas/minúsculas)
         var usuario = usuarios.FirstOrDefault(u =>
             u.Email.Trim().ToLower() == email.Trim().ToLower()
         );
-    
+
         if (usuario == null)
         {
             // Si no existe, retorna mensaje de usuario no encontrado
             return BadRequest(new { mensaje = "userNotFound" });
         }
-    
+
         // Comparar contraseñas
         if (usuario.Contrasena == contrasena)
         {
@@ -172,6 +109,5 @@ public class UsuariosController : ControllerBase
             return BadRequest(new { mensaje = "incorrectPassword" });
         }
     }
-    
-}
 
+}

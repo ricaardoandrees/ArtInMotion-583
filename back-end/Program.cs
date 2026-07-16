@@ -1,4 +1,5 @@
 using Microsoft.Extensions.FileProviders;
+using Usuarioo.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,9 @@ builder.Services.AddCors(options =>
 
 // Agregar controladores
 builder.Services.AddControllers();
+
+// Registro de dependencias (habilita aislamiento para pruebas unitarias)
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 
 var app = builder.Build();
 
