@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using Usuarioo.Logica;
 using Usuarioo.Models;
 using Usuarioo.Repositories;
 
@@ -20,9 +21,7 @@ public class UsuariosController : ControllerBase
         List<Usuario> usuarios = _usuarioRepository.ObtenerTodos();
 
         // Busca si ya existe un usuario con el mismo email (ignorando mayúsculas/minúsculas)
-        bool existe = usuarios.Any(u =>
-            u.Email.Trim().ToLower() == usuario.Email.Trim().ToLower()
-        );
+        bool existe = UsuarioValidaciones.DetectarEmailDuplicado(usuarios, usuario.Email);
 
         if (existe)
         {
@@ -61,7 +60,7 @@ public class UsuariosController : ControllerBase
         }
 
         // Comparar contraseñas
-        if (usuario.Contrasena == contrasena)
+        if (UsuarioValidaciones.VerificarContrasena(usuario.Contrasena, contrasena))
         {
             return Ok(new { mensaje = "loginSuccesful" });
         }
@@ -99,7 +98,7 @@ public class UsuariosController : ControllerBase
         }
 
         // Comparar contraseñas
-        if (usuario.Contrasena == contrasena)
+        if (UsuarioValidaciones.VerificarContrasena(usuario.Contrasena, contrasena))
         {
             // Devuelve el objeto usuario al cliente
             return Ok(usuario);
