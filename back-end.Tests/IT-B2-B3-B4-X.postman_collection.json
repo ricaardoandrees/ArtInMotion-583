@@ -1,0 +1,277 @@
+{
+  "info": {
+    "name": "IT-B2 B3 B4 X - Art in Motion",
+    "description": "Casos de integración restantes del Plan v1.0: B3 (Coloreo), B4 (Dibujar), B2 (Catálogo/Creaciones) y los 2 flujos cruzados IT-X.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5289" },
+    { "key": "nombreImagenOriginal", "value": "dinosaurio.jpg" },
+    { "key": "idCreadorTest", "value": "devop-test-001" }
+  ],
+  "item": [
+    {
+      "name": "IT-B3 — Coloreo",
+      "item": [
+        {
+          "name": "IT-B3-01: Restaurar imagen para colorear",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('nombreImagenRestaurada', data.nombre);"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/imagen/restaurar?nombreImagen={{nombreImagenOriginal}}&idUsuario={{idCreadorTest}}",
+              "host": ["{{baseUrl}}"], "path": ["api","imagen","restaurar"],
+              "query": [
+                { "key": "nombreImagen", "value": "{{nombreImagenOriginal}}" },
+                { "key": "idUsuario", "value": "{{idCreadorTest}}" }
+              ]
+            },
+            "description": "Esperado: 200; la copia de trabajo existe en ImagenesUso. Guarda el nombre de la copia en la variable nombreImagenRestaurada para los siguientes pasos."
+          }
+        },
+        {
+          "name": "IT-B3-02: Pintar zona blanca con color de paleta",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/imagen/pintaryborra?nombreImagen={{nombreImagenRestaurada}}&colorHex=%23FF0000&x=5&y=5&paletaColores=%23FF0000",
+              "host": ["{{baseUrl}}"], "path": ["api","imagen","pintaryborra"],
+              "query": [
+                { "key": "nombreImagen", "value": "{{nombreImagenRestaurada}}" },
+                { "key": "colorHex", "value": "%23FF0000" },
+                { "key": "x", "value": "5" },
+                { "key": "y", "value": "5" },
+                { "key": "paletaColores", "value": "%23FF0000" }
+              ]
+            },
+            "description": "Esperado: 200; el píxel (5,5) cambia a rojo si esa zona era blanca. Ajustar x,y según el tamaño real de tu imagen de prueba si hace falta."
+          }
+        },
+        {
+          "name": "IT-B3-03: Borrar (pintar de blanco) un color",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/imagen/pintaryborra?nombreImagen={{nombreImagenRestaurada}}&colorHex=%23FFFFFF&x=5&y=5&paletaColores=%23FF0000",
+              "host": ["{{baseUrl}}"], "path": ["api","imagen","pintaryborra"],
+              "query": [
+                { "key": "nombreImagen", "value": "{{nombreImagenRestaurada}}" },
+                { "key": "colorHex", "value": "%23FFFFFF" },
+                { "key": "x", "value": "5" },
+                { "key": "y", "value": "5" },
+                { "key": "paletaColores", "value": "%23FF0000" }
+              ]
+            },
+            "description": "Esperado: 200; el color rojo puesto en el paso anterior se borra (vuelve a blanco) porque estaba en la paleta."
+          }
+        },
+        {
+          "name": "IT-B3-04a: Guardar plantilla",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('imagenUrlPlantilla', pm.collectionVariables.get('nombreImagenRestaurada'));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/plantilla/guardar", "host": ["{{baseUrl}}"], "path": ["api","plantilla","guardar"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"NombreCreacion\": \"Prueba IT-B3-04\",\n  \"IdCreador\": \"{{idCreadorTest}}\",\n  \"Puntaje\": 0,\n  \"PaletaColores\": [\"#FF0000\"],\n  \"ImagenUrl\": \"{{nombreImagenRestaurada}}\"\n}"
+            },
+            "description": "Esperado: 200, mensaje de guardado correcto. Se usa el nombre bare (sin '/ImagenesUso/') como ImagenUrl para que el DELETE de IT-B2-04 funcione sin problemas de slashes en la ruta."
+          }
+        },
+        {
+          "name": "IT-B3-04b: Listar plantillas",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('La plantilla guardada aparece con su paleta', () => {",
+              "  const data = pm.response.json();",
+              "  const encontrada = data.find(p => p.ImagenUrl === pm.collectionVariables.get('imagenUrlPlantilla'));",
+              "  pm.expect(encontrada, 'plantilla no encontrada en el listado').to.not.be.undefined;",
+              "  pm.expect(encontrada.PaletaColores).to.include('#FF0000');",
+              "});"
+            ]}
+          }],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/plantilla/listar", "host": ["{{baseUrl}}"], "path": ["api","plantilla","listar"] },
+            "description": "Esperado: la plantilla guardada en IT-B3-04a aparece en el listado con su paleta de colores."
+          }
+        }
+      ]
+    },
+    {
+      "name": "IT-B4 — Dibujar",
+      "item": [
+        {
+          "name": "IT-B4-01: Guardar dibujo válido",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('nombreArchivoDibujo', data.nombreArchivo);"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/dibujo/guardar-simple", "host": ["{{baseUrl}}"], "path": ["api","dibujo","guardar-simple"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Nombre\": \"dibujo_{{idCreadorTest}}\",\n  \"ImagenBase64\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=\"\n}"
+            },
+            "description": "Esperado: 200; PNG escrito en Datos/Dibujo y nueva entrada en dibujos.json con IdCreador = 'devop-test-001' (extraído del nombre tras el guion bajo)."
+          }
+        },
+        {
+          "name": "IT-B4-02: Guardar con nombre vacío",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('Status 400', () => pm.response.to.have.status(400));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/dibujo/guardar-simple", "host": ["{{baseUrl}}"], "path": ["api","dibujo","guardar-simple"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Nombre\": \"\",\n  \"ImagenBase64\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=\"\n}"
+            },
+            "description": "Esperado: 400; dibujos.json sin cambios."
+          }
+        }
+      ]
+    },
+    {
+      "name": "IT-B2 — Catálogo / Creaciones",
+      "item": [
+        {
+          "name": "IT-B2-01a: Listar plantillas",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/creaciones/plantillas", "host": ["{{baseUrl}}"], "path": ["api","creaciones","plantillas"] },
+            "description": "Esperado: 200; incluye la plantilla creada en IT-B3-04a."
+          }
+        },
+        {
+          "name": "IT-B2-01b: Listar dibujos",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/creaciones/dibujos", "host": ["{{baseUrl}}"], "path": ["api","creaciones","dibujos"] },
+            "description": "Esperado: 200; incluye el dibujo creado en IT-B4-01."
+          }
+        },
+        {
+          "name": "IT-B2-02: Calificar creación existente",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/creaciones/calificar", "host": ["{{baseUrl}}"], "path": ["api","creaciones","calificar"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"plantilla\",\n  \"imagenurl\": \"{{imagenUrlPlantilla}}\",\n  \"idcreador\": \"{{idCreadorTest}}\",\n  \"calificacion\": 9\n}"
+            },
+            "description": "Esperado: 200; el puntaje de la plantilla de IT-B3-04a pasa a 9 en plantilla.json."
+          }
+        },
+        {
+          "name": "IT-B2-03: Calificar con datos que no coinciden",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('Status 404', () => pm.response.to.have.status(404));"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/creaciones/calificar", "host": ["{{baseUrl}}"], "path": ["api","creaciones","calificar"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"plantilla\",\n  \"imagenurl\": \"esta-imagen-no-existe.png\",\n  \"idcreador\": \"nadie\",\n  \"calificacion\": 5\n}"
+            },
+            "description": "Esperado: 404 (no encontrado), porque ninguna plantilla coincide con esa ImagenUrl/IdCreador."
+          }
+        },
+        {
+          "name": "IT-B2-04a: Eliminar la plantilla",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('Status 204', () => pm.response.to.have.status(204));"
+            ]}
+          }],
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/creaciones/plantilla/{{imagenUrlPlantilla}}", "host": ["{{baseUrl}}"], "path": ["api","creaciones","plantilla","{{imagenUrlPlantilla}}"] },
+            "description": "Esperado: 204; se borra del JSON y se elimina el archivo físico."
+          }
+        },
+        {
+          "name": "IT-B2-04b: Eliminar el dibujo",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('Status 204', () => pm.response.to.have.status(204));"
+            ]}
+          }],
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/creaciones/dibujo/{{nombreArchivoDibujo}}", "host": ["{{baseUrl}}"], "path": ["api","creaciones","dibujo","{{nombreArchivoDibujo}}"] },
+            "description": "Esperado: 204; se borra del JSON y se elimina el archivo físico."
+          }
+        }
+      ]
+    },
+    {
+      "name": "IT-X — Flujos cruzados (guía de ejecución)",
+      "item": [
+        {
+          "name": "IT-X-01: LEER ANTES DE CORRER",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/plantilla/listar" },
+          "description": "IT-X-01 no es un request nuevo: es correr, EN ESTE ORDEN, requests que ya están en esta colección: (1) IT-B1-01 Registrar usuario [carpeta IT-B1], (2) IT-B3-01 Restaurar imagen, (3) IT-B3-02 Pintar, (4) IT-B3-04a Guardar plantilla, (5) IT-B3-04b Listar plantillas -> confirmar que aparece, (6) IT-B2-02 Calificar, (7) IT-B2-04a Eliminar plantilla. Si los 7 pasos dan el resultado esperado de cada uno, IT-X-01 queda aprobado de punta a punta."
+        },
+        {
+          "name": "IT-X-02: LEER ANTES DE CORRER",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/creaciones/dibujos" },
+          "description": "IT-X-02: correr en orden (1) IT-B1-01 Registrar usuario, (2) IT-B4-01 Guardar dibujo, (3) IT-B2-01b Listar dibujos -> confirmar que aparece, (4) IT-B2-04b Eliminar dibujo. Si los 4 pasos dan el resultado esperado, IT-X-02 queda aprobado de punta a punta."
+        }
+      ]
+    }
+  ]
+}
