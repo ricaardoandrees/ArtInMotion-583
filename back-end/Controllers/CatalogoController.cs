@@ -31,33 +31,18 @@ public class CatalogoController : ControllerBase
         if (archivo == null || archivo.Length == 0)
             return BadRequest("No se seleccionó ningún archivo.");
 
-
-        var extensionesPermitidas = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
-        var extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
-        if (!extensionesPermitidas.Contains(extension))
+        if (!CatalogoValidaciones.ValidarExtensionArchivo(archivo.FileName))
             return BadRequest("Solo se permiten archivos de imagen.");
+
+        var extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
 
         // Crea la carpeta si no existe
         if (!Directory.Exists(_rutaImagenes))
             Directory.CreateDirectory(_rutaImagenes);
 
         // Busca el mayor número de subida ya existente
-        var archivos = Directory.GetFiles(_rutaImagenes, "subida*.*");
-        int maxNum = 0;
-        foreach (var archivoExistente in archivos)
-        {
-            var nombre = Path.GetFileNameWithoutExtension(archivoExistente);
-            if (nombre.StartsWith("subida"))
-            {
-                var numeroStr = nombre.Substring(6); // "subida".Length == 6
-                if (int.TryParse(numeroStr, out int num))
-                {
-                    if (num > maxNum) maxNum = num;
-                }
-            }
-        }
-        int nuevoNum = maxNum + 1;
-        var nombreArchivo = $"subida{nuevoNum}{extension}";
+        var archivosExistentes = Directory.GetFiles(_rutaImagenes, "subida*.*");
+        var nombreArchivo = CatalogoValidaciones.CalcularNombreSubida(archivosExistentes, extension);
         var rutaDestino = Path.Combine(_rutaImagenes, nombreArchivo);
 
         using (var stream = new FileStream(rutaDestino, FileMode.Create))
