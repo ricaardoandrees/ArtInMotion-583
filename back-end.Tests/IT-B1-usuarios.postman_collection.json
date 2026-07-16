@@ -1,0 +1,123 @@
+{
+  "info": {
+    "name": "IT-B1 Usuario - Art in Motion",
+    "description": "Casos de prueba de integración del bloque B1 (Perfil/Usuario), según Plan de Integración v1.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "IT-B1-01: Registrar usuario con datos válidos",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"Email\": \"prueba.it01@ucab.edu.ve\",\n  \"Nombre\": \"Prueba IT01\",\n  \"FechaNacimiento\": \"2000-01-01\",\n  \"Contrasena\": \"clave123\",\n  \"Uuid\": \"\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5289/api/usuarios/guardar",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5289",
+          "path": ["api", "usuarios", "guardar"]
+        },
+        "description": "Esperado: 200; nueva entrada en usuarios.json con identificador generado."
+      }
+    },
+    {
+      "name": "IT-B1-02: Registrar con email ya existente",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"Email\": \"prueba.it01@ucab.edu.ve\",\n  \"Nombre\": \"Otro Nombre\",\n  \"FechaNacimiento\": \"1999-05-05\",\n  \"Contrasena\": \"otraClave\",\n  \"Uuid\": \"\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5289/api/usuarios/guardar",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5289",
+          "path": ["api", "usuarios", "guardar"]
+        },
+        "description": "Esperado: 400 (emailAlreadyRegistered); usuarios.json sin cambios. IMPORTANTE: correr después de IT-B1-01."
+      }
+    },
+    {
+      "name": "IT-B1-03a: Login con credenciales correctas",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"Email\": \"prueba.it01@ucab.edu.ve\",\n  \"Contrasena\": \"clave123\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5289/api/usuarios/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5289",
+          "path": ["api", "usuarios", "login"]
+        },
+        "description": "Esperado: 200 (loginSuccesful)."
+      }
+    },
+    {
+      "name": "IT-B1-03b: Login con contraseña incorrecta",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"Email\": \"prueba.it01@ucab.edu.ve\",\n  \"Contrasena\": \"claveIncorrecta\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5289/api/usuarios/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5289",
+          "path": ["api", "usuarios", "login"]
+        },
+        "description": "Esperado: 400 (incorrectPassword)."
+      }
+    },
+    {
+      "name": "IT-B1-03c: Login con usuario inexistente",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"Email\": \"noexiste@ucab.edu.ve\",\n  \"Contrasena\": \"cualquierClave\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5289/api/usuarios/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5289",
+          "path": ["api", "usuarios", "login"]
+        },
+        "description": "Esperado: 400 (userNotFound)."
+      }
+    },
+    {
+      "name": "IT-B1-04: Buscar usuario (search) con credenciales correctas",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"Email\": \"prueba.it01@ucab.edu.ve\",\n  \"Contrasena\": \"clave123\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5289/api/usuarios/search",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5289",
+          "path": ["api", "usuarios", "search"]
+        },
+        "description": "Esperado: 200 + objeto Usuario con su identificador (Uuid)."
+      }
+    }
+  ]
+}
